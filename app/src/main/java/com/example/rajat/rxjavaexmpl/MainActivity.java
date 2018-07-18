@@ -32,7 +32,7 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 
     TextView mTextView;
-    String mString = "Many students define paragraphs in terms of length: a paragraph is a group of at least five sentences, a paragraph is half a page long, etc. In reality, though, the unity and coherence of ideas among sentences is what constitutes a paragraph. A paragraph is defined as “a group of sentences or a single sentence that forms a unit” (Lunsford and Connors 116).";
+    String mString = "As technology is rapidly changing the world around us, many people worry that technology will replace human intelligence. Some educators worry that there will be no students to teach anymore in the near future as technology might take over a lot of tasks and abilities that we have been teaching our students for decades.";
     String[] mWordStrings;
     int mSpan = 0;
     private TextToSpeech mTextToSpeech;
@@ -81,26 +81,26 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             public void subscribe(final ObservableEmitter<SpannableStringBuilder> emitter) throws Exception {
                 if (!TextUtils.isEmpty(string)) {
                     for (int j = 0; j < mWordStrings.length; j++) {
-
+                        String speakWord = mWordStrings[j];
                         SpannableStringBuilder stringBuilder = new SpannableStringBuilder(mString);
-                        stringBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), mSpan, mSpan + mWordStrings[j].length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        mSpan = mSpan + mWordStrings[j].length() + 1;
+                        stringBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), mSpan, mSpan + speakWord.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        mSpan = mSpan + speakWord.length() + 1;
                         emitter.onNext(stringBuilder);
 
                         synchronized (emitter) {
                             /*For English*/
-                            if (mWordStrings[j].contains("etc.") || mWordStrings[j].contains(".") || mWordStrings[j].contains("?") || mWordStrings[j].contains("!!!") || mWordStrings[j].contains("।") || mWordStrings[j].contains("|")) {
-                                emitter.wait(900);
+                            if (speakWord.contains("etc.") || speakWord.contains(".") || speakWord.contains("?") || speakWord.contains("!!!") || speakWord.contains("।") || speakWord.contains("|")) {
+                                emitter.wait(1000);
 
                             } else {
-                                emitter.wait(mWordStrings[j].length() * 80);
+                                emitter.wait(speakWord.length() * 70);
                             }
 
                             /*for hindi*/
-                           /* if (mWordStrings[j].contains(".") || mWordStrings[j].contains("?") || mWordStrings[j].contains("!!!") || mWordStrings[j].contains("।") || mWordStrings[j].contains("|")) {
+                           /* if (speakWord.contains(".") || speakWord.contains("?") || speakWord.contains("!!!") || speakWord.contains("।") || speakWord.contains("|")) {
                                 emitter.wait(900);
                             } else {
-                                emitter.wait(mWordStrings[j].length() * 90);
+                                emitter.wait(speakWord.length() * 90);
                             }*/
                         }
                         if (mStopTTS) {
