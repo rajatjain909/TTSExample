@@ -24,6 +24,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -31,12 +32,12 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 
     TextView mTextView;
-    String mString = "Paragraphs are the building blocks of papers. Many students define paragraphs in terms of length: a paragraph is a group of at least five sentences, a paragraph is half a page long, etc. In reality, though, the unity and coherence of ideas among sentences is what constitutes a paragraph. A paragraph is defined as “a group of sentences or a single sentence that forms a unit” (Lunsford and Connors 116).";
-
+    String mString = "Many students define paragraphs in terms of length: a paragraph is a group of at least five sentences, a paragraph is half a page long, etc. In reality, though, the unity and coherence of ideas among sentences is what constitutes a paragraph. A paragraph is defined as “a group of sentences or a single sentence that forms a unit” (Lunsford and Connors 116).";
     String[] mWordStrings;
     int mSpan = 0;
     private TextToSpeech mTextToSpeech;
     ImageButton mButton;
+    boolean mStopTTS = false;
 
     @SuppressLint("CheckResult")
     @Override
@@ -61,11 +62,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     mButton.setTag("stop");
                     mButton.setImageResource(R.drawable.action_stop);
                     highlight(mString);
+                    mStopTTS = false;
                 } else if (mButton.getTag().equals("stop")) {
                     stopSpeech();
                     mButton.setTag("play");
                     mButton.setImageResource(R.drawable.action_play);
-                    highlight("");
+                    mStopTTS = true;
+
                 }
             }
         });
@@ -77,18 +80,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             @Override
             public void subscribe(final ObservableEmitter<SpannableStringBuilder> emitter) throws Exception {
                 if (!TextUtils.isEmpty(string)) {
-                    int i, j;
-                    for (j = 0; j < mWordStrings.length; j++) {
-                    /*new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            SpannableStringBuilder stringBuilder = new SpannableStringBuilder(mString);
-                            stringBuilder.setSpan(new StyleSpan(Typeface.BOLD), 0,5,*//*mSpan, mSpan + mWordStrings[finalJ].length(),*//* Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            emitter.onNext(stringBuilder);
-                            emitter.onComplete();
-                            mSpan = mSpan + mWordStrings[finalJ].length();
-                        }
-                    }, 2000);*/
+                    for (int j = 0; j < mWordStrings.length; j++) {
 
                         SpannableStringBuilder stringBuilder = new SpannableStringBuilder(mString);
                         stringBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), mSpan, mSpan + mWordStrings[j].length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -101,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                 emitter.wait(900);
 
                             } else {
-                                emitter.wait(mWordStrings[j].length() * 75);
+                                emitter.wait(mWordStrings[j].length() * 80);
                             }
 
                             /*for hindi*/
@@ -111,7 +103,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                 emitter.wait(mWordStrings[j].length() * 90);
                             }*/
                         }
-
+                        if (mStopTTS) {
+                            break;
+                        }
 
                     }
                 }
@@ -138,6 +132,11 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         mTextView.setText(stringBuilder);
                         mSpan = 0;
                     }
+                }, new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+
+                    }
                 });
     }
 
@@ -153,8 +152,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
             //  int result = mTextToSpeech.setLanguage(Locale.ENGLISH);
             mTextToSpeech.setPitch(1.0f);
-            mTextToSpeech.setSpeechRate(0.8f);
-
+            mTextToSpeech.setSpeechRate(0.9f);
+            mTextToSpeech.setOnUtteranceCompletedListener(this);
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("After Success", "onInit: lang no available");
             }
@@ -165,11 +164,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     private void speakLoud(String s) {
-        HashMap<String, String> hash = new HashMap<String, String>();
+        final HashMap<String, String> hash = new HashMap<String, String>();
         hash.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_NOTIFICATION));
         hash.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "FINISH");
         if (!TextUtils.isEmpty(s)) {
             mTextToSpeech.speak(s, TextToSpeech.QUEUE_ADD, hash);
+
         } else {
             mTextToSpeech.speak("No Data", TextToSpeech.QUEUE_ADD, hash);
         }
@@ -186,11 +186,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     public void stopSpeech() {
         mTextToSpeech.playSilentUtterance(1500, TextToSpeech.QUEUE_FLUSH, null);
+
     }
+
 
     @Override
     public void onUtteranceCompleted(String s) {
-        //stopSpeech();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -198,6 +199,5 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 mButton.setImageResource(R.drawable.action_play);
             }
         });
-        // highlight("");
     }
 }
