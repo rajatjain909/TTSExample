@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -32,8 +33,9 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 
     TextView mTextView;
-    String mString = "As technology is rapidly changing the world around us, many people worry that technology will replace human intelligence. Some educators worry that there will be no students to teach anymore in the near future as technology might take over a lot of tasks and abilities that we have been teaching our students for decades.";
-    String[] mWordStrings;
+    String mString = "an enlightening experience. the process of receiving or giving systematic instruction, especially at a school or university. the theory and practice of teaching. Sachin ji Bhai. Shelendra Sir. Bhai bhai";
+    /*String mString = "This technology is rapidly changing the world around us, many people worry that technology will replace human intelligence. Some educators worry that there will be no students to teach anymore in the near future as technology might take over a lot of tasks and abilities that we have been teaching our students for decades.";*/
+    String[] mWordStrings, mSentenceString;
     int mSpan = 0;
     private TextToSpeech mTextToSpeech;
     ImageButton mButton;
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         mString = mString.replaceAll("  ", " ").trim();
         mTextView.setText(mString);
         mWordStrings = mString.split(" ");
+        /*Pattern p = Pattern.compile("(?<=\\w[\\w\\)\\]][\\.\\?\\!]\\s)");
+        mSentenceString = p.split(mString);*/
         mTextToSpeech = new TextToSpeech(this, this);
         mButton.setTag("play");
         mButton.setImageResource(R.drawable.action_play);
@@ -132,14 +136,70 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         mTextView.setText(stringBuilder);
                         mSpan = 0;
                     }
-                }, new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-
-                    }
                 });
     }
 
+    private void highlightSentence(final String string) {
+
+        Observable.create(new ObservableOnSubscribe<SpannableStringBuilder>() {
+            @Override
+            public void subscribe(final ObservableEmitter<SpannableStringBuilder> emitter) throws Exception {
+                if (!TextUtils.isEmpty(string)) {
+                    for (int j = 0; j < mSentenceString.length; j++) {
+                        String speakSentence = mSentenceString[j];
+                        SpannableStringBuilder stringBuilder = new SpannableStringBuilder(mString);
+                        stringBuilder.setSpan(new ForegroundColorSpan(Color.BLUE), mSpan, mSpan + speakSentence.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        mSpan = mSpan + speakSentence.length() + 1;
+                        emitter.onNext(stringBuilder);
+
+                        synchronized (emitter) {
+                            /*For English*/
+                           /* if (speakSentence.contains("etc.") || speakSentence.contains(".") || speakSentence.contains("?") || speakSentence.contains("!!!") || speakSentence.contains("।") || speakSentence.contains("|")) {
+                                emitter.wait(1000);
+
+                            } else {
+                                emitter.wait(speakSentence.length() * 70);
+                            }*/
+                            emitter.wait(speakSentence.length() * 100);
+
+                            /*for hindi*/
+                           /* if (speakWord.contains(".") || speakWord.contains("?") || speakWord.contains("!!!") || speakWord.contains("।") || speakWord.contains("|")) {
+                                emitter.wait(900);
+                            } else {
+                                emitter.wait(speakWord.length() * 90);
+                            }*/
+                        }
+                        if (mStopTTS) {
+                            break;
+                        }
+
+                    }
+                }
+
+                emitter.onComplete();
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<SpannableStringBuilder>() {
+                    @Override
+                    public void accept(SpannableStringBuilder s) throws Exception {
+                        mTextView.setText(s);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        throwable.printStackTrace();
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        //Toast.makeText(MainActivity.this,"Success", Toast.LENGTH_SHORT).show();
+                        SpannableStringBuilder stringBuilder = new SpannableStringBuilder(mString);
+                        stringBuilder.setSpan(new StyleSpan(Typeface.NORMAL), 0, mString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        mTextView.setText(stringBuilder);
+                        mSpan = 0;
+                    }
+                });
+    }
 
     @Override
     public void onInit(int i) {
