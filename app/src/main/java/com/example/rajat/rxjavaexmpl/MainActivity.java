@@ -33,6 +33,7 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 
     TextView mTextView;
+    //String mString="हेल्थ डेस्क. इंसानों की तरह कौओं में भी कोलेस्ट्राॅल बढ़ता है खासकर शहरी क्षेत्र में रहने वालों में। न्यूयॉर्क के हेमिल्टन कॉलेज के शोधकर्ताओं के मुताबिक, शहरी क्षेत्र में रहने वाले कौओं में कोलेस्ट्रॉल का स्तर ग्रामीण क्षेत्र में रहने वालों के मुकाबले 5 गुना ज्यादा है। रिसर्च रिपोर्ट में कोलेस्ट्राॅल बढ़ने का कारण शहरी क्षेत्रों में कौओं का चीज बर्गर अधिक खाया जाना बताया गया है।";
     String mString = "<ul>\n" +
             "\t&#9679;\n" +
             "We see many different plants in our surroundings.<br/><br/>\t&#9679;\n" +
@@ -285,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             mTextToSpeech.stop();
             mTextToSpeech.shutdown();
         }
-        super.onDestroy();
+
     }
 
     public void stopSpeech() {
