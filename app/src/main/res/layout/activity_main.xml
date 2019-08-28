@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.v4.widget.NestedScrollView
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    >
+<RelativeLayout
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -25,7 +30,9 @@
         android:background="@null"
         android:enabled="false"
         android:padding="24dp"
+        android:visibility="gone"
         android:src="@drawable/action_play"
         android:text="click"/>
 
 </RelativeLayout>
+</android.support.v4.widget.NestedScrollView>
